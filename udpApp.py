@@ -16,13 +16,16 @@ class MainWindow(QMainWindow):
         # 初始化界面
         self.ui.setupUi(self)
         self.__actionBlinding__()
+        self.__beBeautiful__()
         self.udpIp = '192.168.1.3'
         self.udpPort = '5000'
 
     def __actionBlinding__(self):
         self.ui.openFile.clicked.connect(self.fileOpenAck)
         self.ui.actionUDP.triggered.connect(self.udpManuCreate)
-
+    def __beBeautiful__(self):
+        self.ui.openFile.setFont('楷体')
+        self.ui.openFile.setIcon(QIcon('./ico/2.png'))
     def fileOpenAck(self):
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.AnyFile)
@@ -102,10 +105,12 @@ class MainWindow(QMainWindow):
             times = int(self.fileMesgSize / 1024)
             res = self.fileMesgSize % 1024
             head = b'B10000000001'
+            levelUp = b'B10000110001000600045aa55000'
+            reboot = b'B100001100010004000455aa5aa5'
             if (times != 0):
                 for i in range(0, times):
                     vp_addr = bytes(
-                        str(hex(int('5000', 16)+512*i)).rjust(4, '0'), encoding='utf-8')
+                        str(hex(int('8000', 16)+512*i)).rjust(4, '0'), encoding='utf-8')
                     vp_len = b'0400'
                     sand = head + vp_addr[2:] + vp_len + \
                         self.fileMesg[i*1024:(i+1)*1024]
@@ -114,12 +119,16 @@ class MainWindow(QMainWindow):
                     time.sleep(0.005)
             if (res != 0):
                 vp_addr = bytes(
-                    str(hex(int('5000', 16) + 512 * times)).rjust(4, '0'), encoding='utf-8')
+                    str(hex(int('8000', 16) + 512 * times)).rjust(4, '0'), encoding='utf-8')
                 vp_len = bytes((str(hex(res))[2:]).rjust(
                     4, '0'), encoding='utf-8')
                 sand = head + vp_addr[2:] + vp_len + \
                     self.fileMesg[times * 1024: times * 1024 + res]
                 udp_socket.sendto(sand, (self.udpIp, int(self.udpPort)))
+                time.sleep(0.005)
+            udp_socket.sendto(levelUp, (self.udpIp, int(self.udpPort)))
+            time.sleep(0.005)
+            udp_socket.sendto(reboot, (self.udpIp, int(self.udpPort)))
         except:
             self.tipErrorSocketSend()
         udp_socket.close()
