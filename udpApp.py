@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
                 self.tipErrorFileOpen()
                 return
             self.fileMesgSize = os.path.getsize(fileNames[0])
-            print(self.fileMesgSize)
+            # print(self.fileMesgSize)
             self.fileMesg = filedHead.read()
             filedHead.close()
             self.udpSendFile()
@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
                         self.fileMesg[i*1024:(i+1)*1024]
                     udp_socket.sendto(
                         sand, (self.ui.udpIp.text(), int(self.ui.udpPort.text())))
-                    time.sleep(0.005)
+                    time.sleep(0.001)
             if (res != 0):
                 vp_addr = bytes(
                     str(hex(int('5000', 16) + 512 * times)).rjust(4, '0'), encoding='utf-8')
@@ -68,6 +68,13 @@ class MainWindow(QMainWindow):
                     self.fileMesg[times * 1024: times * 1024 + res]
                 udp_socket.sendto(sand, (self.ui.udpIp.text(),
                                          int(self.ui.udpPort.text())))
+                updata_cmd = b'B1000000000100060004\x5a\xa5\x50\x00'
+                reboot_cmd = b'B1000000000100040004\x55\xaa\x5a\xa5'
+                udp_socket.sendto(updata_cmd, (self.ui.udpIp.text(),
+                                               int(self.ui.udpPort.text())))
+                time.sleep(0.001)
+                udp_socket.sendto(reboot_cmd, (self.ui.udpIp.text(),
+                                               int(self.ui.udpPort.text())))
         except:
             self.tipErrorSocketSend()
         udp_socket.close()
