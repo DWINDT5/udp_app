@@ -146,7 +146,6 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             pass
 
-
 if __name__ == "__main__":
     app = QApplication([])
     app.setStyle("Fusion")
