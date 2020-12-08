@@ -105,8 +105,8 @@ class MainWindow(QMainWindow):
             times = int(self.fileMesgSize / 1024)
             res = self.fileMesgSize % 1024
             head = b'B10000000001'
-            levelUp = b'B10000110001000600045aa55000'
-            reboot = b'B100001100010004000455aa5aa5'
+            levelUp = b'B1000011000100060004\x5a\xa5\x50\x00'
+            reboot = b'B1000011000100040004\x55\xaa\x5a\xa5'
             if (times != 0):
                 for i in range(0, times):
                     vp_addr = bytes(
@@ -116,7 +116,7 @@ class MainWindow(QMainWindow):
                         self.fileMesg[i*1024:(i+1)*1024]
                     udp_socket.sendto(
                         sand, (self.udpIp, int(self.udpPort)))
-                    time.sleep(0.005)
+                    time.sleep(0.001)
             if (res != 0):
                 vp_addr = bytes(
                     str(hex(int('8000', 16) + 512 * times)).rjust(4, '0'), encoding='utf-8')
@@ -125,9 +125,9 @@ class MainWindow(QMainWindow):
                 sand = head + vp_addr[2:] + vp_len + \
                     self.fileMesg[times * 1024: times * 1024 + res]
                 udp_socket.sendto(sand, (self.udpIp, int(self.udpPort)))
-                time.sleep(0.005)
+                time.sleep(0.001)
             udp_socket.sendto(levelUp, (self.udpIp, int(self.udpPort)))
-            time.sleep(0.005)
+            time.sleep(0.001)
             udp_socket.sendto(reboot, (self.udpIp, int(self.udpPort)))
         except:
             self.tipErrorSocketSend()
