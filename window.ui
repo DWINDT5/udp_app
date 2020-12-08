@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>751</width>
+    <width>753</width>
     <height>105</height>
    </rect>
   </property>
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,1,1">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="6,1,2">
       <item>
        <widget class="QLineEdit" name="fileDir">
         <property name="minimumSize">
@@ -55,7 +55,7 @@
          </size>
         </property>
         <property name="text">
-         <string>打开文件</string>
+         <string>打开文件并下载</string>
         </property>
        </widget>
       </item>
@@ -68,7 +68,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>751</width>
+     <width>753</width>
      <height>23</height>
     </rect>
    </property>

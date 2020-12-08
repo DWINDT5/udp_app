@@ -20,7 +20,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(751, 105)
+        MainWindow.resize(753, 105)
         self.actionUDP = QAction(MainWindow)
         self.actionUDP.setObjectName(u"actionUDP")
         self.centralwidget = QWidget(MainWindow)
@@ -47,9 +47,9 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.openFile)
 
-        self.horizontalLayout.setStretch(0, 2)
+        self.horizontalLayout.setStretch(0, 6)
         self.horizontalLayout.setStretch(1, 1)
-        self.horizontalLayout.setStretch(2, 1)
+        self.horizontalLayout.setStretch(2, 2)
 
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
@@ -57,7 +57,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 751, 23))
+        self.menubar.setGeometry(QRect(0, 0, 753, 23))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         MainWindow.setMenuBar(self.menubar)
@@ -76,7 +76,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.actionUDP.setText(QCoreApplication.translate("MainWindow", u"UDP", None))
-        self.openFile.setText(QCoreApplication.translate("MainWindow", u"\u6253\u5f00\u6587\u4ef6", None))
+        self.openFile.setText(QCoreApplication.translate("MainWindow", u"\u6253\u5f00\u6587\u4ef6\u5e76\u4e0b\u8f7d", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u8bbe\u7f6e", None))
     # retranslateUi
 
