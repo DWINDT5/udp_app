@@ -45,6 +45,8 @@ class MainWindow(QMainWindow):
             self.fileMesg = filedHead.read()
             filedHead.close()
             self.udpSendFile()
+    def OpenInitFile(self):
+        fileName = 'config.txt'
     def udpManuCreate(self):
         dialog = QDialog()
         dialog.setWindowTitle('UDP CONFIG')
