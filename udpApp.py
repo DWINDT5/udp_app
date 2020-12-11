@@ -75,10 +75,14 @@ class MainWindow(QMainWindow):
 
         self.ui.textEditRx = QTextEdit()
         self.ui.pushButtonSocketCrcRx = QPushButton('接收清空')
+        self.ui.pushButtonSocketSaveRx = QPushButton('保存数据')
         self.ui.pushButtonSocketCrcRx.setFont('楷体')
+        self.ui.pushButtonSocketSaveRx.setFont('楷体')
+        self.ui.textEditRx.setTextColor('red')
         layout2 = QGridLayout()
         layout2.addWidget(self.ui.textEditRx, 0, 0, 5, 6)
         layout2.addWidget(self.ui.pushButtonSocketCrcRx, 0, 7, 1, 1)
+        layout2.addWidget(self.ui.pushButtonSocketSaveRx, 4, 7, 1, 1)
         groupBox2.setLayout(layout2)
 
         self.ui.textEditTx = QTextEdit()
@@ -100,10 +104,12 @@ class MainWindow(QMainWindow):
         vtLayout.setStretch(1, 6)
         vtLayout.setStretch(2, 2)
         dialog.setLayout(vtLayout)
-
+        dialog.resize(1024, 600)
+        # 绑定信号槽
         self.ui.pushButtonSocketSend.clicked.connect(lambda :self.pushButtonSocketSendSlot(self.ui.textEditTx.toPlainText()))
         self.ui.pushButtonSocketCrcSend.clicked.connect(lambda :self.ui.textEditTx.setPlainText(''))
         self.ui.pushButtonSocketCrcRx.clicked.connect(lambda: self.ui.textEditRx.setPlainText(''))
+        self.ui.pushButtonSocketSaveRx.clicked.connect(self.saveUdpRxdata)
         textEditIP.editingFinished.connect(lambda :self.setUdpIp(textEditIP.text()))
         textEditPort.editingFinished.connect(lambda: self.setUdpPort(textEditPort.text()))
 
@@ -117,8 +123,31 @@ class MainWindow(QMainWindow):
         while True:
             timeNow = time.strftime('%H:%M:%S', time.localtime(time.time()))
             recvIpPort, recvMesg = self.udpInterface.socketGetRcvData(self.udpInterface.udpSocket)
-            res = timeNow + ' IP:' + recvIpPort[0] + ' Port:' + str(recvIpPort[1]) + ' Mesg:' + recvMesg
+            res = '(' + timeNow + ' IP:' + recvIpPort[0] + ' Port:' + str(recvIpPort[1]) + '):' + recvMesg
             self.ui.textEditRx.append(res)
+    def saveUdpRxdata(self):
+        # 先判断目录是否存在
+        dir = os.path.exists('./user')
+        if dir == False:
+            b = os.getcwd()
+            os.makedirs(b + '\\user')
+        # 写入数据到文件 不存在会新建 存在会直接覆盖
+        filePoint = open('./user/Rx.txt', 'w+')
+        msg = self.ui.textEditRx.toPlainText()
+        filePoint.write(msg)
+        # 写入完毕后弹出提示窗口
+        dialog = QDialog()
+        dialog.setFixedSize(200, 40)
+        dialog.setWindowTitle('Tips')
+        dialog.setWindowIcon(QIcon('./ico/1.png'))
+        tip = '文件已保存至./user/Rx.txt'
+        text = QLabel(tip)
+        text.setFont('黑体')
+        layout = QVBoxLayout()
+        layout.addWidget(text)
+        dialog.setLayout(layout)
+        if dialog.exec_():
+            pass
 
     def pushButtonSocketSendSlot(self, string):
         send = bytes(string, encoding='utf-8')
