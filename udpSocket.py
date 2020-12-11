@@ -1,12 +1,11 @@
 import socket
 import time
-import wmi
 class UdpApplication():
     def __init__(self):
         super().__init__()
         self.__paramentInit__()
     def __paramentInit__(self):
-        # self.socketCreate()
+        self.socketCreate()
         pass
     # UDP创建套接字
     def socketCreate(self):
@@ -32,3 +31,9 @@ class UdpApplication():
             self.udpSocket.sendto(string, (udpIp, int(udpPort)))
         # 等待1MS 避免设备卡死
         time.sleep(0.001)
+    # UDP获取接收数据 阻塞进程 必须放在线程中处理
+    def socketGetRcvData(self, udpSocket):
+        recvMsg = udpSocket.recvfrom(1024)  #阻塞
+        recvIpPort = recvMsg[1]
+        recvMsg = recvMsg[0].decode('gbk')
+        return recvIpPort, recvMsg

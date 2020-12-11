@@ -5,6 +5,7 @@ from PySide2.QtCore import *
 from window import Ui_MainWindow
 import os
 from udpSocket import UdpApplication
+import threading, time
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -52,9 +53,11 @@ class MainWindow(QMainWindow):
         vtLayout = QVBoxLayout()
         layout1 = QGridLayout()
         groupBox1 = QGroupBox('目标主机')
+        groupBox2 = QGroupBox('数据接收窗口(文本模式)')
         groupBox3 = QGroupBox('数据发送窗口(文本模式)')
 
         groupBox1.setFont('黑体')
+        groupBox2.setFont('黑体')
         groupBox3.setFont('黑体')
         label1 = QLabel('UDP IP')
         label2 = QLabel('UDP 端口号')
@@ -70,30 +73,53 @@ class MainWindow(QMainWindow):
         layout1.addWidget(textEditPort, 0, 5, 1, 2)
         groupBox1.setLayout(layout1)
 
+        self.ui.textEditRx = QTextEdit()
+        self.ui.pushButtonSocketCrcRx = QPushButton('接收清空')
+        self.ui.pushButtonSocketCrcRx.setFont('楷体')
+        layout2 = QGridLayout()
+        layout2.addWidget(self.ui.textEditRx, 0, 0, 5, 6)
+        layout2.addWidget(self.ui.pushButtonSocketCrcRx, 0, 7, 1, 1)
+        groupBox2.setLayout(layout2)
+
         self.ui.textEditTx = QTextEdit()
         self.ui.pushButtonSocketSend = QPushButton('发送数据')
         self.ui.pushButtonSocketCrcSend = QPushButton('发送清空')
         self.ui.pushButtonSocketSend.setFont('楷体')
         self.ui.pushButtonSocketCrcSend.setFont('楷体')
-        layout2 = QGridLayout()
-        layout2.addWidget(self.ui.textEditTx, 0, 0, 5, 6)
-        layout2.addWidget(self.ui.pushButtonSocketSend, 0, 7, 1, 1)
-        layout2.addWidget(self.ui.pushButtonSocketCrcSend, 4, 7, 1, 1)
-        groupBox3.setLayout(layout2)
+        layout3 = QGridLayout()
+        layout3.addWidget(self.ui.textEditTx, 0, 0, 5, 6)
+        layout3.addWidget(self.ui.pushButtonSocketSend, 0, 7, 1, 1)
+        layout3.addWidget(self.ui.pushButtonSocketCrcSend, 4, 7, 1, 1)
+        groupBox3.setLayout(layout3)
 
         vtLayout.addWidget(groupBox1)
+        vtLayout.addWidget(groupBox2)
         vtLayout.addWidget(groupBox3)
 
         vtLayout.setStretch(0, 1)
-        vtLayout.setStretch(1, 3)
+        vtLayout.setStretch(1, 6)
+        vtLayout.setStretch(2, 2)
         dialog.setLayout(vtLayout)
 
         self.ui.pushButtonSocketSend.clicked.connect(lambda :self.pushButtonSocketSendSlot(self.ui.textEditTx.toPlainText()))
         self.ui.pushButtonSocketCrcSend.clicked.connect(lambda :self.ui.textEditTx.setPlainText(''))
+        self.ui.pushButtonSocketCrcRx.clicked.connect(lambda: self.ui.textEditRx.setPlainText(''))
         textEditIP.editingFinished.connect(lambda :self.setUdpIp(textEditIP.text()))
         textEditPort.editingFinished.connect(lambda: self.setUdpPort(textEditPort.text()))
+
+        # 创建了UDP就可以开启接收线程
+        self.thread1 = threading.Thread(target = self.monitorUdpRx)
+        self.thread1.start()
+
         if dialog.exec_():
             pass
+    def monitorUdpRx(self):
+        while True:
+            timeNow = time.strftime('%H:%M:%S', time.localtime(time.time()))
+            recvIpPort, recvMesg = self.udpInterface.socketGetRcvData(self.udpInterface.udpSocket)
+            res = timeNow + ' IP:' + recvIpPort[0] + ' Port:' + str(recvIpPort[1]) + ' Mesg:' + recvMesg
+            self.ui.textEditRx.append(res)
+
     def pushButtonSocketSendSlot(self, string):
         send = bytes(string, encoding='utf-8')
         self.udpInterface.socketSendString(send, self.udpIp, self.udpPort)
