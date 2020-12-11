@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>753</width>
-    <height>105</height>
+    <width>778</width>
+    <height>115</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="6,1,2">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="6,1,2,1,2">
       <item>
        <widget class="QLineEdit" name="fileDir">
         <property name="minimumSize">
@@ -59,6 +59,32 @@
         </property>
        </widget>
       </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonTest">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>40</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>TEST</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
@@ -68,7 +94,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>753</width>
+     <width>778</width>
      <height>23</height>
     </rect>
    </property>

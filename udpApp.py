@@ -21,6 +21,7 @@ class MainWindow(QMainWindow):
 
     def __actionBlinding__(self):
         self.ui.openFile.clicked.connect(self.fileOpenAck)
+        self.ui.pushButtonTest.clicked.connect(self.pushButtonTestAck)
         self.ui.actionUDP.triggered.connect(self.udpManuCreate)
     def __beBeautiful__(self):
         self.ui.openFile.setFont('楷体')
@@ -43,6 +44,10 @@ class MainWindow(QMainWindow):
             self.fileMesg = filedHead.read()
             filedHead.close()
             self.udpSendFile()
+    def pushButtonTestAck(self):
+        while True:
+            self.udpSendFile()
+            time.sleep(20)
     def OpenInitFile(self):
         fileName = 'config.txt'
     def udpManuCreate(self):
