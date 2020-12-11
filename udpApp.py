@@ -3,10 +3,8 @@ from PySide2.QtWidgets import *
 from PySide2.QtGui import *
 from PySide2.QtCore import *
 from window import Ui_MainWindow
-import socket
 import os
-import time
-
+from udpSocket import UdpApplication
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -18,6 +16,7 @@ class MainWindow(QMainWindow):
         self.__beBeautiful__()
         self.udpIp = '192.168.1.3'
         self.udpPort = '5000'
+        self.udpInterface = UdpApplication()
 
     def __actionBlinding__(self):
         self.ui.openFile.clicked.connect(self.fileOpenAck)
@@ -89,63 +88,44 @@ class MainWindow(QMainWindow):
         vtLayout.setStretch(1, 3)
         dialog.setLayout(vtLayout)
 
-        self.ui.pushButtonSocketSend.clicked.connect(self.pushButtonSocketSendSlot)
-        self.ui.pushButtonSocketCrcSend.clicked.connect(self.pushButtonSocketCrcSendSlot)
+        self.ui.pushButtonSocketSend.clicked.connect(lambda :self.pushButtonSocketSendSlot(self.ui.textEditTx.toPlainText()))
+        self.ui.pushButtonSocketCrcSend.clicked.connect(lambda :self.ui.textEditTx.setPlainText(''))
         textEditIP.editingFinished.connect(lambda :self.setUdpIp(textEditIP.text()))
         textEditPort.editingFinished.connect(lambda: self.setUdpPort(textEditPort.text()))
         if dialog.exec_():
             pass
-    def pushButtonSocketSendSlot(self):
-        send = bytes(self.ui.textEditTx.toPlainText(), encoding='utf-8')
-        self.socketSendString(send)
-    def pushButtonSocketCrcSendSlot(self):
-        self.ui.textEditTx.setPlainText('')
+    def pushButtonSocketSendSlot(self, string):
+        send = bytes(string, encoding='utf-8')
+        self.udpInterface.socketSendString(send, self.udpIp, self.udpPort)
     def setUdpIp(self, string):     #设置UDP 目标IP地址
         self.udpIp = string
     def setUdpPort(self, string):   #设置UDP 目标端口号
         self.udpPort = string
-    def socketCreate(self): #UDP创建套接字
-        if hasattr(self,'udp_socket') == False:  #没有创建socket
-            ip_port = ('192.168.1.2', 6000)
-            self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.udp_socket.bind(ip_port)
-    def socketClose(self):  #UDP关闭套接字
-        if hasattr(self, 'udp_socket') == True:  # 有创建socket
-            self.udp_socket.close()
-            del self.udp_socket
-    def socketSendString(self, string): #UDP发送数据
-        try:    #本地如果没用此IP和端口 就尝试两次 第一次会创建 第二次才能成功绑定
-            self.socketCreate()
-            self.udp_socket.sendto(string, (self.udpIp, int(self.udpPort)))
-        except:
-            self.socketCreate()
-            self.udp_socket.sendto(string, (self.udpIp, int(self.udpPort)))
-        time.sleep(0.001)   #等待1MS 避免设备卡死
     def udpSendFile(self):  #UDP发送文件
-        self.socketCreate()
-        # try:
-        times = int(self.fileMesgSize / 1024)
-        res = self.fileMesgSize % 1024
-        head = b'B10000000001'
-        levelUp = b'B1000011000100060004\x5a\xa5\x80\x00'
-        reboot = b'B1000011000100040004\x55\xaa\x5a\xa5'
-        if (times != 0):
-            for i in range(0, times):
-                vp_addr = bytes(str(hex(int('8000', 16)+512*i)).rjust(4, '0'), encoding='utf-8')
-                vp_len = b'0400'
+        self.udpInterface.socketCreate()
+        try:
+            times = int(self.fileMesgSize / 1024)
+            res = self.fileMesgSize % 1024
+            head = b'B10000000001'
+            levelUp = b'B1000011000100060004\x5a\xa5\x80\x00'
+            reboot = b'B1000011000100040004\x55\xaa\x5a\xa5'
+            if (times != 0):
+                for i in range(0, times):
+                    vp_addr = bytes(str(hex(int('8000', 16)+512*i)).rjust(4, '0'), encoding='utf-8')
+                    vp_len = b'0400'
+                    sand = head + vp_addr[2:] + vp_len + \
+                        self.fileMesg[i*1024:(i+1)*1024]
+                    self.udpInterface.socketSendString(sand, self.udpIp, self.udpPort)
+            if (res != 0):
+                vp_addr = bytes(str(hex(int('8000', 16) + 512 * times)).rjust(4, '0'), encoding='utf-8')
+                vp_len = bytes((str(hex(res))[2:]).rjust(4, '0'), encoding='utf-8')
                 sand = head + vp_addr[2:] + vp_len + \
-                    self.fileMesg[i*1024:(i+1)*1024]
-                self.socketSendString(sand)
-        if (res != 0):
-            vp_addr = bytes(str(hex(int('8000', 16) + 512 * times)).rjust(4, '0'), encoding='utf-8')
-            vp_len = bytes((str(hex(res))[2:]).rjust(4, '0'), encoding='utf-8')
-            sand = head + vp_addr[2:] + vp_len + \
-                self.fileMesg[times * 1024: times * 1024 + res]
-            self.socketSendString(sand)
-            self.socketSendString(levelUp)
-            self.socketSendString(reboot)
-        # except:
-        #     self.tipErrorSocketSend()
+                    self.fileMesg[times * 1024: times * 1024 + res]
+                self.udpInterface.socketSendString(sand, self.udpIp, self.udpPort)
+                self.udpInterface.socketSendString(levelUp, self.udpIp, self.udpPort)
+                self.udpInterface.socketSendString(reboot, self.udpIp, self.udpPort)
+        except:
+            self.tipErrorSocketSend()
 
     def tipErrorFileOpen(self):
         dialog = QDialog()
@@ -175,4 +155,4 @@ if __name__ == "__main__":
     MainUI = MainWindow()
     MainUI.show()
     app.exec_()
-    MainUI.socketClose()
+    MainUI.udpInterface.socketClose()
