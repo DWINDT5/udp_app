@@ -45,6 +45,10 @@ class MainWindow(QMainWindow):
             filedHead.close()
             self.udpSendFile()
     def pushButtonTestAck(self):
+        self.thread2 = threading.Thread(target=self.test)
+        self.thread2.start()
+
+    def test(self):
         while True:
             self.udpSendFile()
             time.sleep(20)
