@@ -5,7 +5,6 @@ from PySide2.QtCore import *
 from window import Ui_MainWindow
 import socket
 import os
-import sys
 import time
 
 
@@ -41,7 +40,6 @@ class MainWindow(QMainWindow):
                 self.tipErrorFileOpen()
                 return
             self.fileMesgSize = os.path.getsize(fileNames[0])
-            print(self.fileMesgSize)
             self.fileMesg = filedHead.read()
             filedHead.close()
             self.udpSendFile()
@@ -98,7 +96,6 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             pass
     def pushButtonSocketSendSlot(self):
-        self.socketCreate()
         send = bytes(self.ui.textEditTx.toPlainText(), encoding='utf-8')
         self.socketSendString(send)
     def pushButtonSocketCrcSendSlot(self):
@@ -115,36 +112,40 @@ class MainWindow(QMainWindow):
     def socketClose(self):  #UDP关闭套接字
         if hasattr(self, 'udp_socket') == True:  # 有创建socket
             self.udp_socket.close()
+            del self.udp_socket
     def socketSendString(self, string): #UDP发送数据
-        self.socketCreate()
-        self.udp_socket.sendto(string, (self.udpIp, int(self.udpPort)))
+        try:    #本地如果没用此IP和端口 就尝试两次 第一次会创建 第二次才能成功绑定
+            self.socketCreate()
+            self.udp_socket.sendto(string, (self.udpIp, int(self.udpPort)))
+        except:
+            self.socketCreate()
+            self.udp_socket.sendto(string, (self.udpIp, int(self.udpPort)))
         time.sleep(0.001)   #等待1MS 避免设备卡死
     def udpSendFile(self):  #UDP发送文件
         self.socketCreate()
-        try:
-            times = int(self.fileMesgSize / 1024)
-            res = self.fileMesgSize % 1024
-            head = b'B10000000001'
-            levelUp = b'B1000011000100060004\x5a\xa5\x80\x00'
-            reboot = b'B1000011000100040004\x55\xaa\x5a\xa5'
-            if (times != 0):
-                for i in range(0, times):
-                    vp_addr = bytes(str(hex(int('8000', 16)+512*i)).rjust(4, '0'), encoding='utf-8')
-                    vp_len = b'0400'
-                    sand = head + vp_addr[2:] + vp_len + \
-                        self.fileMesg[i*1024:(i+1)*1024]
-                    self.socketSendString(sand)
-            if (res != 0):
-                vp_addr = bytes(str(hex(int('8000', 16) + 512 * times)).rjust(4, '0'), encoding='utf-8')
-                vp_len = bytes((str(hex(res))[2:]).rjust(4, '0'), encoding='utf-8')
+        # try:
+        times = int(self.fileMesgSize / 1024)
+        res = self.fileMesgSize % 1024
+        head = b'B10000000001'
+        levelUp = b'B1000011000100060004\x5a\xa5\x80\x00'
+        reboot = b'B1000011000100040004\x55\xaa\x5a\xa5'
+        if (times != 0):
+            for i in range(0, times):
+                vp_addr = bytes(str(hex(int('8000', 16)+512*i)).rjust(4, '0'), encoding='utf-8')
+                vp_len = b'0400'
                 sand = head + vp_addr[2:] + vp_len + \
-                    self.fileMesg[times * 1024: times * 1024 + res]
+                    self.fileMesg[i*1024:(i+1)*1024]
                 self.socketSendString(sand)
+        if (res != 0):
+            vp_addr = bytes(str(hex(int('8000', 16) + 512 * times)).rjust(4, '0'), encoding='utf-8')
+            vp_len = bytes((str(hex(res))[2:]).rjust(4, '0'), encoding='utf-8')
+            sand = head + vp_addr[2:] + vp_len + \
+                self.fileMesg[times * 1024: times * 1024 + res]
+            self.socketSendString(sand)
             self.socketSendString(levelUp)
             self.socketSendString(reboot)
-        except:
-            self.tipErrorSocketSend()
-        self.socketClose()
+        # except:
+        #     self.tipErrorSocketSend()
 
     def tipErrorFileOpen(self):
         dialog = QDialog()
@@ -174,3 +175,4 @@ if __name__ == "__main__":
     MainUI = MainWindow()
     MainUI.show()
     app.exec_()
+    MainUI.socketClose()
