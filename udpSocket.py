@@ -10,14 +10,14 @@ class UdpApplication():
     # UDP创建套接字
     def socketCreate(self):
         # 没有创建socket 才会创建套接字
-        if hasattr(self,'udp_socket') == False:
+        if hasattr(self,'udpSocket') == False:
             ip_port = ('192.168.1.2', 6000)
             self.udpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.udpSocket.bind(ip_port)
     # UDP关闭套接字
     def socketClose(self):
         # 没有创建socket 才会关闭套接字
-        if hasattr(self, 'udp_socket') == True:  # 有创建socket
+        if hasattr(self, 'udpSocket') == True:  # 有创建socket
             self.udpSocket.close()
             del self.udpSocket
     # UDP发送数据 数据string-udpIp地址string——udp端口号string
