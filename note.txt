@@ -1,0 +1,3 @@
+pyrcc5 -o desk_sheet_rc.py desk_sheet.qrc
+pyinstaller desk_sheet_app.py -i 1.ico --noconsole --hidden-import PySide2.QtXml
+pyinstaller -i 1.ico -F desk_sheet.py --noconsole --hidden-import PySide2.QtXml
